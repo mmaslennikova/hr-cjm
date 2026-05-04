@@ -390,6 +390,41 @@
     border-radius: 6px;
     padding: 10px 12px;
   }
+  .rec-title {
+    margin: 0 0 4px 0;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--warn);
+    font-weight: 700;
+  }
+  .rec-title:not(:first-child) { margin-top: 10px; }
+  .recs-list {
+    margin: 0 0 4px 0;
+    padding-left: 18px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .recs-list li { margin-bottom: 3px; }
+  .recs-list li.rec-empty {
+    list-style: none;
+    margin-left: -18px;
+    color: var(--placeholder);
+    font-style: italic;
+  }
+  .rec-tag {
+    display: inline-block;
+    background: rgba(217, 119, 6, .18);
+    color: var(--warn);
+    font-weight: 700;
+    border-radius: 3px;
+    padding: 0 5px;
+    font-size: 9.5px;
+    margin-right: 4px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    vertical-align: 1px;
+  }
   .hypotheses h4 {
     margin: 0 0 4px 0;
     font-size: 10px;
@@ -513,11 +548,11 @@ const QC_DEFS = [
 
 const STAGES = [
   {
-    id: '0a', title: 'Поиск (НАШ)', tags: [{label:'Источник',cls:''}], cls: 'source',
+    id: '0a', title: 'Поиск (Внутренний поиск)', tags: [{label:'Источник',cls:''}], cls: 'source',
     pos: { x: 0, y: -750 },
     stats: [
       { key: 'volume', label: 'Объём (вход)', value: '733 откликов (с 22.12.2025)' },
-      { key: 'convOur', label: 'Конверсия → след. (НАШ)', value: '46.4%', cls: 'our' },
+      { key: 'convOur', label: 'Конверсия → след. (Внутренний поиск)', value: '46.4%', cls: 'our' },
       { key: 'convAg', label: 'Конверсия → след. (АГ)', value: '—', cls: 'ag' },
     ],
     fields: {
@@ -547,7 +582,7 @@ const STAGES = [
     pos: { x: 0, y: 250 },
     stats: [
       { key: 'volume', label: 'Объём (вход)', value: '250 первых касаний (20-30 апр)' },
-      { key: 'convOur', label: 'Конверсия → след. (НАШ)', value: '—', cls: 'our' },
+      { key: 'convOur', label: 'Конверсия → след. (Внутренний поиск)', value: '—', cls: 'our' },
       { key: 'convAg', label: 'Конверсия → след. (АГ)', value: '25.6%', cls: 'ag' },
     ],
     fields: {
@@ -576,7 +611,7 @@ const STAGES = [
     id: '1', title: 'Скрининг + валидация (6 квалифицирующих)',
     pos: { x: 720, y: -300 },
     stats: [
-      { key: 'convOur', label: 'Тест отправлен → выполнен (НАШ)', value: '55.9% (340 → 190)', cls: 'our' },
+      { key: 'convOur', label: 'Тест отправлен → выполнен (Внутренний поиск)', value: '55.9% (340 → 190)', cls: 'our' },
       { key: 'convAg', label: 'Тест отправлен → выполнен (АГ)', value: '40.6% (64 → 26)', cls: 'ag' },
     ],
     fields: {
@@ -605,7 +640,7 @@ const STAGES = [
     id: '2', title: 'Тестовое: выполнение → одобрение Дарьей',
     pos: { x: 1440, y: -300 },
     stats: [
-      { key: 'convOur', label: 'Тест выполнен → одобрен (НАШ)', value: '37.9% (190 → 72)', cls: 'our' },
+      { key: 'convOur', label: 'Тест выполнен → одобрен (Внутренний поиск)', value: '37.9% (190 → 72)', cls: 'our' },
       { key: 'convAg', label: 'Тест выполнен → одобрен (АГ)', value: '53.8% (26 → 14)', cls: 'ag' },
     ],
     fields: {
@@ -634,7 +669,7 @@ const STAGES = [
     id: '3', title: 'Интервью (1 круг, проведённый собес)',
     pos: { x: 2160, y: -300 },
     stats: [
-      { key: 'convOur', label: 'Одобрен → собес проведён (НАШ)', value: 'Не отслеживается', cls: 'our' },
+      { key: 'convOur', label: 'Одобрен → собес проведён (Внутренний поиск)', value: 'Не отслеживается', cls: 'our' },
       { key: 'convAg', label: 'Одобрен → собес проведён (АГ)', value: '64.3% (14 → 9)', cls: 'ag' },
     ],
     fields: {
@@ -663,7 +698,7 @@ const STAGES = [
     id: '4', title: 'Решение / выставление оффера',
     pos: { x: 2880, y: -300 },
     stats: [
-      { key: 'convOur', label: 'Собес → оффер отправлен (НАШ)', value: '56.9% (72 → 41)', cls: 'our' },
+      { key: 'convOur', label: 'Собес → оффер отправлен (Внутренний поиск)', value: '56.9% (72 → 41)', cls: 'our' },
       { key: 'convAg', label: 'Собес → оффер отправлен (АГ)', value: '—', cls: 'ag' },
     ],
     fields: {
@@ -692,7 +727,7 @@ const STAGES = [
     id: '5', title: 'Принятие оффера врачом', critical: true, tags: [{label:'Критичная точка',cls:'critical'}],
     pos: { x: 3600, y: -300 },
     stats: [
-      { key: 'convOur', label: 'Оффер отправлен → принят (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Оффер отправлен → принят (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Оффер отправлен → принят (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -721,7 +756,7 @@ const STAGES = [
     id: '6', title: 'Оформление (документы, договор, доступы)',
     pos: { x: 4320, y: -750 },
     stats: [
-      { key: 'convOur', label: 'Принял → оформлен (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Принял → оформлен (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Принял → оформлен (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -750,7 +785,7 @@ const STAGES = [
     id: '7', title: 'Онбординг / обучение', critical: true, tags: [{label:'Критичная точка',cls:'critical'}],
     pos: { x: 4320, y: 250 },
     stats: [
-      { key: 'convOur', label: 'Оформлен → обучен (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Оформлен → обучен (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Оформлен → обучен (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -780,7 +815,7 @@ const STAGES = [
     pos: { x: 5040, y: -300 },
     stats: [
       { key: 'volume', label: 'Ключевой артефакт', value: '5 тестовых исследований' },
-      { key: 'convOur', label: 'Обучение → песочница (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Обучение → песочница (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Обучение → песочница (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -810,7 +845,7 @@ const STAGES = [
     pos: { x: 5760, y: -300 },
     stats: [
       { key: 'volume', label: 'Ключевой артефакт', value: '3 смены закрыты → бонус агентству' },
-      { key: 'convOur', label: 'Песочница → 3 смены (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Песочница → 3 смены (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Песочница → 3 смены (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -840,7 +875,7 @@ const STAGES = [
     pos: { x: 6480, y: -300 },
     stats: [
       { key: 'volume', label: 'Ключевой артефакт', value: '30 исследований по 10' },
-      { key: 'convOur', label: '3 смены → 30 (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: '3 смены → 30 (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: '3 смены → 30 (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -869,7 +904,7 @@ const STAGES = [
     id: '11a', title: 'Стабильная работа', cls: 'outcome-good',
     pos: { x: 7200, y: -750 },
     stats: [
-      { key: 'convOur', label: 'Цель — снизить отток (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Цель — снизить отток (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Цель — снизить отток (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -898,7 +933,7 @@ const STAGES = [
     id: '11b', title: 'Увольнение после 30 исследований', cls: 'outcome-bad',
     pos: { x: 7200, y: 250 },
     stats: [
-      { key: 'convOur', label: 'Цель — минимизировать (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Цель — минимизировать (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Цель — минимизировать (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -988,6 +1023,8 @@ function setValue(stageId, group, key, value) {
   if (!state.data[stageId][group]) state.data[stageId][group] = {};
   state.data[stageId][group][key] = value;
   scheduleSave();
+  // refresh dynamic recommendations for this stage (skip the manual hypothesis edits — they're not inputs to recs)
+  if (group !== 'hypotheses') updateRecommendations(stageId);
 }
 function getPos(stage) {
   return state.positions[stage.id] || stage.pos;
@@ -1029,7 +1066,7 @@ function renderFieldRow(stage, def, group, src) {
     const ag  = getValue(stage.id, group, def.key + 'Ag',  '');
     return labelHTML + `<div class="field-split">
       <div class="split-cell split-cell-our">
-        <span class="split-cell-label">Наш</span>
+        <span class="split-cell-label">Внутренний поиск</span>
         <div class="field-value" contenteditable="true" data-stage="${stage.id}" data-group="${group}" data-key="${def.key}Our" data-placeholder="—">${escapeHTML(our)}</div>
       </div>
       <div class="split-cell split-cell-ag">
@@ -1099,7 +1136,133 @@ function renderLinkList(stageId, group, key, src) {
 }
 function renderHypotheses(stage) {
   const v = getValue(stage.id, 'hypotheses', 'list', stage.hypotheses||'');
-  return `<div class="hypotheses-list" contenteditable="true" data-stage="${stage.id}" data-group="hypotheses" data-key="list" data-placeholder="Добавь гипотезы — каждую с новой строки">${escapeHTML(v)}</div>`;
+  return `
+    <div class="rec-title">Авто-подсказки по введённым данным</div>
+    <ul class="recs-list" data-recs="${stage.id}">${renderRecsItems(stage)}</ul>
+    <div class="rec-title">Гипотезы и идеи</div>
+    <div class="hypotheses-list" contenteditable="true" data-stage="${stage.id}" data-group="hypotheses" data-key="list" data-placeholder="Добавь гипотезы — каждую с новой строки">${escapeHTML(v)}</div>
+  `;
+}
+
+function renderRecsItems(stage) {
+  const recs = generateRecommendations(stage);
+  if (!recs.length) return '<li class="rec-empty">Заполни поля выше — подсказки появятся.</li>';
+  return recs.map(r => {
+    if (typeof r === 'object' && r.tag) {
+      return `<li><span class="rec-tag">${escapeHTML(r.tag)}</span>${escapeHTML(r.text)}</li>`;
+    }
+    return `<li>${escapeHTML(r)}</li>`;
+  }).join('');
+}
+
+function updateRecommendations(stageId) {
+  const stage = STAGES.find(s => s.id === stageId);
+  if (!stage) return;
+  const target = canvas && canvas.querySelector(`ul.recs-list[data-recs="${stageId}"]`);
+  if (!target) return;
+  target.innerHTML = renderRecsItems(stage);
+  requestAnimationFrame(drawArrows);
+}
+
+function parsePct(v) {
+  if (v === null || v === undefined) return null;
+  const m = String(v).match(/(-?\d+(?:[.,]\d+)?)\s*%/);
+  return m ? parseFloat(m[1].replace(',', '.')) : null;
+}
+
+function looksUnknown(v) {
+  if (!v) return true;
+  return /^(—|-|нет данных|не отслеж|заполнить|уточн|\?)\s*\)?$|\(нет данных\)|\(заполнить\)/i.test(String(v).trim());
+}
+
+function generateRecommendations(stage) {
+  const recs = [];
+  const id = stage.id;
+
+  const topReasons = getTagArray(id, 'fields', 'topReasons', stage.fields || {});
+  const tracker = getLinkArray(id, 'fields', 'tracker', stage.fields || {});
+  const durOur = String(getValue(id, 'fields', 'durationOur', '') || '').trim();
+  const durAg  = String(getValue(id, 'fields', 'durationAg',  '') || '').trim();
+  const decider = String(getValue(id, 'fields', 'decider', stage.fields?.decider || '') || '').trim();
+  const passCriteria = String(getValue(id, 'fields', 'passCriteria', stage.fields?.passCriteria || '') || '').trim();
+
+  // ---- top reasons ----
+  if (topReasons.length === 0) {
+    recs.push({ tag: 'данные', text: 'Логируй причины отвала тегами — без них нельзя приоритизировать улучшения.' });
+  } else {
+    const top3 = topReasons.slice(0, 3).join(', ');
+    if (id === '5') recs.push({ tag: 'оффер', text: `Для каждой причины (${top3}) сделай контрмеру: звонок-напоминание, peer-обоснование, улучшение условий.` });
+    else if (id === '9') recs.push({ tag: 'смены', text: `Причины отвала (${top3}) → конкретные мероприятия в онбординг (этап 7) и инструктаж перед сменой.` });
+    else if (id === '7' || id === '10') recs.push({ tag: 'обучение', text: `По причинам отвала (${top3}) обнови программу обучения и добавь чек-лист на этапе.` });
+    else recs.push({ tag: 'паттерны', text: `Топ-причины: ${top3}. Сформулируй мероприятие на самую частую.` });
+  }
+
+  // ---- tracker ----
+  if (tracker.length === 0) {
+    recs.push({ tag: 'данные', text: 'Привяжи источник данных этапа — ссылку на лист / Notion / платформу.' });
+  }
+
+  // ---- duration ----
+  if (!durOur && !durAg) {
+    recs.push({ tag: 'sla', text: 'Длительность этапа не измерена — начни замерять. Без числа нельзя ставить SLA.' });
+  } else if (durOur && durAg) {
+    const numOur = parseFloat(durOur);
+    const numAg = parseFloat(durAg);
+    if (!isNaN(numOur) && !isNaN(numAg) && Math.abs(numOur - numAg) > 0.1) {
+      const slower = numOur > numAg ? 'Внутренний поиск' : 'Агентство';
+      recs.push({ tag: 'sla', text: `${slower} тянет дольше — изучи, что у быстрого канала организовано иначе.` });
+    }
+  }
+
+  // ---- conversion comparison ----
+  const statOur = stage.stats?.find(s => s.key === 'convOur');
+  const statAg  = stage.stats?.find(s => s.key === 'convAg');
+  const convOur = getValue(id, 'stats', 'convOur', statOur?.value);
+  const convAg  = getValue(id, 'stats', 'convAg',  statAg?.value);
+  const ourPct = parsePct(convOur);
+  const agPct  = parsePct(convAg);
+  if (ourPct !== null && agPct !== null) {
+    const diff = ourPct - agPct;
+    if (Math.abs(diff) >= 10) {
+      const better = diff > 0 ? 'Внутренний поиск' : 'Агентство';
+      const worse  = diff > 0 ? 'Агентство' : 'Внутренний поиск';
+      recs.push({ tag: 'разрыв', text: `Разница в конверсии ${Math.abs(diff).toFixed(1)} пп: ${better} сильнее. Изучи, что у победителя работает иначе, и перенеси в ${worse}.` });
+    }
+  } else if (looksUnknown(convOur) && looksUnknown(convAg)) {
+    recs.push({ tag: 'данные', text: 'Конверсия этапа не измеряется ни в одном канале. Без неё этап «слепой».' });
+  }
+
+  // ---- decider ----
+  if (/уточн|\?/i.test(decider)) {
+    recs.push({ tag: 'роли', text: 'Уточни, кто принимает решение на этапе. Без явного DRI этап не ускорить.' });
+  }
+
+  // ---- passCriteria ----
+  if (looksUnknown(passCriteria) || /формализ/i.test(passCriteria)) {
+    recs.push({ tag: 'критерии', text: 'Формализуй критерии «прошёл» — рубрика 3-5 пунктов, чтобы решения принимались сравнимо.' });
+  }
+
+  // ---- stage-specific ----
+  if (id === '2' && ourPct !== null && agPct !== null && agPct - ourPct >= 10) {
+    recs.push({ tag: 'дарья-гейт', text: 'Дарья режет внутренний поток жёстче. Гипотезы: качество тестов hh ниже, или агентство фильтрует строже на своей стороне.' });
+  }
+  if (id === '5' && (looksUnknown(convOur) || looksUnknown(convAg))) {
+    recs.push({ tag: 'критическая', text: 'Этап 5 — целевая метрика #2. Начни измерять % принятия оффера и собирать причины отказа в свободной форме.' });
+  }
+  if (id === '9' && (looksUnknown(convOur) || looksUnknown(convAg))) {
+    recs.push({ tag: 'критическая', text: 'Этап 9 — целевая метрика #2. Считай % врачей, закрывших 3 первые смены, и причины несостоявшихся выходов.' });
+  }
+  if (id === '10') {
+    recs.push({ tag: 'удержание', text: 'Считай % врачей, доходящих до 30 исследований — это прокси-метрика #4 (удержание).' });
+  }
+  if ((id === '6' || id === '7') && (looksUnknown(durOur) || looksUnknown(durAg) || (!durOur && !durAg))) {
+    recs.push({ tag: 'параллельность', text: 'Чтобы 6 и 7 шли параллельно, измерь длительность каждой ветки — если 6 длиннее 7 (или наоборот), оптимизируй медленную.' });
+  }
+  if (stage.critical && recs.length === 0) {
+    recs.push({ tag: 'критическая', text: 'Это критичная точка — минимум: длительность, причины отвала, конверсия, явный DRI.' });
+  }
+
+  return recs;
 }
 function renderStage(stage) {
   const tags = (stage.tags||[]).map(t => `<span class="stage-tag ${t.cls||''}">${escapeHTML(t.label)}</span>`).join('');
@@ -1149,7 +1312,7 @@ function renderGoals() {
         <li>Прописать принципы контроля врача на каждом этапе.</li>
       </ol>
       <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:var(--our)"></span>Наш поток (HH)</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--our)"></span>Внутренний поиск (HH)</span>
         <span class="legend-item"><span class="legend-dot" style="background:var(--ag)"></span>Агентство</span>
         <span class="legend-item"><span class="legend-dot" style="background:var(--critical)"></span>Критичная точка</span>
         <span class="legend-item"><span class="legend-dot" style="background:var(--good)"></span>Целевой исход</span>
