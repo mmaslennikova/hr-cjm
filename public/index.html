@@ -548,12 +548,13 @@ const QC_DEFS = [
 
 const STAGES = [
   {
-    id: '0a', title: 'Поиск (ВП)', tags: [{label:'Источник',cls:''}], cls: 'source',
+    id: '0a', title: 'Поиск (ВП)', tags: [{label:'Источник 1',cls:''}], cls: 'source',
     pos: { x: 0, y: -750 },
     stats: [
       { key: 'volume', label: 'Объём (вход)', value: '733 откликов (с 22.12.2025)' },
       { key: 'convOur', label: 'Конверсия → след. (ВП)', value: '46.4%', cls: 'our' },
       { key: 'convAg', label: 'Конверсия → след. (АГ)', value: '—', cls: 'ag' },
+      { key: 'convEndToEnd', label: 'Сквозная (отклик → оффер)', value: '5.6% (41/733)', cls: 'our' },
     ],
     fields: {
       duration: '',
@@ -578,12 +579,13 @@ const STAGES = [
     hypotheses: '1. Разнести колонку «Откликов» на источники (hh / таргет РФ / КЗ / УЗ).\n2. Добавить «дату первого касания» в трекер.',
   },
   {
-    id: '0b', title: 'Поиск (АГЕНТСТВО)', tags: [{label:'Источник',cls:''}], cls: 'source',
+    id: '0b', title: 'Поиск (АГЕНТСТВО)', tags: [{label:'Источник 2',cls:''}], cls: 'source',
     pos: { x: 0, y: 250 },
     stats: [
       { key: 'volume', label: 'Объём (вход)', value: '250 первых касаний (20-30 апр)' },
       { key: 'convOur', label: 'Конверсия → след. (ВП)', value: '—', cls: 'our' },
       { key: 'convAg', label: 'Конверсия → след. (АГ)', value: '25.6%', cls: 'ag' },
+      { key: 'convEndToEnd', label: 'Сквозная (касание → собес)', value: '3.6% (9/250)', cls: 'ag' },
     ],
     fields: {
       duration: '',
