@@ -221,13 +221,14 @@
 
   .stats-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 6px;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 10px;
     background: var(--bg);
     border-radius: 6px;
     padding: 8px 10px;
   }
   .stat { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .stat.stat-full { grid-column: 1 / -1; }
   .stat-label {
     font-size: 10px;
     color: var(--muted);
@@ -551,9 +552,10 @@ const STAGES = [
     id: '0a', title: 'Поиск (ВП)', tags: [{label:'Источник 1',cls:''}], cls: 'source',
     pos: { x: 0, y: -750 },
     stats: [
-      { key: 'offers',     label: 'Офферы',          value: '41',                 cls: 'our' },
-      { key: 'convEndOur', label: 'Сквозная ВП',     value: '5.6% (41/733)',      cls: 'our' },
-      { key: 'convEndAg',  label: 'Сквозная АГ',     value: '0.8% (2/250)',       cls: 'ag'  },
+      { key: 'offersOur',  label: 'Офферы (ВП)',     value: '41',                 cls: 'our' },
+      { key: 'offersAg',   label: 'Офферы (АГ)',     value: '2',                  cls: 'ag'  },
+      { key: 'convEndOur', label: 'Сквозная (ВП)',   value: '5.6% (41/733)',      cls: 'our' },
+      { key: 'convEndAg',  label: 'Сквозная (АГ)',   value: '0.8% (2/250)',       cls: 'ag'  },
     ],
     fields: {
       duration: '',
@@ -581,9 +583,10 @@ const STAGES = [
     id: '0b', title: 'Поиск (АГЕНТСТВО)', tags: [{label:'Источник 2',cls:''}], cls: 'source',
     pos: { x: 0, y: 250 },
     stats: [
-      { key: 'offers',     label: 'Офферы',          value: '2',                  cls: 'ag'  },
-      { key: 'convEndOur', label: 'Сквозная ВП',     value: '5.6% (41/733)',      cls: 'our' },
-      { key: 'convEndAg',  label: 'Сквозная АГ',     value: '0.8% (2/250)',       cls: 'ag'  },
+      { key: 'offersOur',  label: 'Офферы (ВП)',     value: '41',                 cls: 'our' },
+      { key: 'offersAg',   label: 'Офферы (АГ)',     value: '2',                  cls: 'ag'  },
+      { key: 'convEndOur', label: 'Сквозная (ВП)',   value: '5.6% (41/733)',      cls: 'our' },
+      { key: 'convEndAg',  label: 'Сквозная (АГ)',   value: '0.8% (2/250)',       cls: 'ag'  },
     ],
     fields: {
       duration: '',
@@ -816,7 +819,7 @@ const STAGES = [
     id: '8', title: 'Тестовые описания (песочница)',
     pos: { x: 5040, y: -300 },
     stats: [
-      { key: 'volume', label: 'Ключевой артефакт', value: '5 тестовых исследований' },
+      { key: 'volume', label: 'Ключевой артефакт', value: '5 тестовых исследований', full: true },
       { key: 'convOur', label: 'Обучение → песочница (ВП)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Обучение → песочница (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
@@ -846,7 +849,7 @@ const STAGES = [
     id: '9', title: 'Первые смены — Sandbox', critical: true, tags: [{label:'Критичная точка',cls:'critical'},{label:'Бонус агентству',cls:''}],
     pos: { x: 5760, y: -300 },
     stats: [
-      { key: 'volume', label: 'Ключевой артефакт', value: '3 смены закрыты → бонус агентству' },
+      { key: 'volume', label: 'Ключевой артефакт', value: '3 смены закрыты → бонус агентству', full: true },
       { key: 'convOur', label: 'Песочница → 3 смены (ВП)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Песочница → 3 смены (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
@@ -876,7 +879,7 @@ const STAGES = [
     id: '10', title: 'Адаптация — Sandbox → Supervised → Autonomous (цикл 30 исследований)', critical: true, tags: [{label:'Критичная точка',cls:'critical'},{label:'Цикл в 30 исследований',cls:''}],
     pos: { x: 6480, y: -300 },
     stats: [
-      { key: 'volume', label: 'Ключевой артефакт', value: '30 исследований по 10' },
+      { key: 'volume', label: 'Ключевой артефакт', value: '30 исследований по 10', full: true },
       { key: 'convOur', label: '3 смены → 30 (ВП)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: '3 смены → 30 (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
@@ -1050,10 +1053,11 @@ function renderEditable(stageId, group, key, defaultValue, placeholder, extraCls
 function renderStats(stage) {
   return stage.stats.map(s => {
     const v = getValue(stage.id, 'stats', s.key, s.value);
-    const cls = ['stat-value', s.cls||''].filter(Boolean).join(' ');
-    return `<div class="stat">
+    const valCls = ['stat-value', s.cls||''].filter(Boolean).join(' ');
+    const wrapCls = ['stat', s.full ? 'stat-full' : ''].filter(Boolean).join(' ');
+    return `<div class="${wrapCls}">
       <span class="stat-label">${escapeHTML(s.label)}</span>
-      <div class="${cls}" contenteditable="true" data-stage="${stage.id}" data-group="stats" data-key="${s.key}" data-placeholder="—">${escapeHTML(v)}</div>
+      <div class="${valCls}" contenteditable="true" data-stage="${stage.id}" data-group="stats" data-key="${s.key}" data-placeholder="—">${escapeHTML(v)}</div>
     </div>`;
   }).join('');
 }
