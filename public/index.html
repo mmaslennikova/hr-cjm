@@ -552,8 +552,6 @@ const STAGES = [
     pos: { x: 0, y: -750 },
     stats: [
       { key: 'volume', label: 'Объём (вход)', value: '733 откликов (с 22.12.2025)' },
-      { key: 'convOur', label: 'Конверсия → след. (ВП)', value: '46.4%', cls: 'our' },
-      { key: 'convAg', label: 'Конверсия → след. (АГ)', value: '—', cls: 'ag' },
       { key: 'convEndToEnd', label: 'Сквозная (отклик → оффер)', value: '5.6% (41/733)', cls: 'our' },
     ],
     fields: {
@@ -583,9 +581,7 @@ const STAGES = [
     pos: { x: 0, y: 250 },
     stats: [
       { key: 'volume', label: 'Объём (вход)', value: '250 первых касаний (20-30 апр)' },
-      { key: 'convOur', label: 'Конверсия → след. (ВП)', value: '—', cls: 'our' },
-      { key: 'convAg', label: 'Конверсия → след. (АГ)', value: '25.6%', cls: 'ag' },
-      { key: 'convEndToEnd', label: 'Сквозная (касание → собес)', value: '3.6% (9/250)', cls: 'ag' },
+      { key: 'convEndToEnd', label: 'Сквозная (касание → оффер)', value: '0.8% (2/250)', cls: 'ag' },
     ],
     fields: {
       duration: '',
@@ -613,8 +609,8 @@ const STAGES = [
     id: '1', title: 'Скрининг + валидация (6 квалифицирующих)',
     pos: { x: 720, y: -300 },
     stats: [
-      { key: 'convOur', label: 'Тест отправлен → выполнен (ВП)', value: '55.9% (340 → 190)', cls: 'our' },
-      { key: 'convAg', label: 'Тест отправлен → выполнен (АГ)', value: '40.6% (64 → 26)', cls: 'ag' },
+      { key: 'convOur', label: 'Прошёл скрининг (ВП)', value: '46.4% (733 → 340)', cls: 'our' },
+      { key: 'convAg', label: 'Прошёл скрининг (АГ)', value: '25.6% (250 → 64)', cls: 'ag' },
     ],
     fields: {
       duration: '',
@@ -642,8 +638,10 @@ const STAGES = [
     id: '2', title: 'Тестовое: выполнение → одобрение Дарьей',
     pos: { x: 1440, y: -300 },
     stats: [
-      { key: 'convOur', label: 'Тест выполнен → одобрен (ВП)', value: '37.9% (190 → 72)', cls: 'our' },
-      { key: 'convAg', label: 'Тест выполнен → одобрен (АГ)', value: '53.8% (26 → 14)', cls: 'ag' },
+      { key: 'convOurSent',      label: 'Отправлен → выполнен (ВП)',  value: '55.9% (340 → 190)', cls: 'our' },
+      { key: 'convAgSent',       label: 'Отправлен → выполнен (АГ)',  value: '40.6% (64 → 26)',   cls: 'ag' },
+      { key: 'convOur',          label: 'Выполнен → одобрен (ВП)',    value: '37.9% (190 → 72)',  cls: 'our' },
+      { key: 'convAg',           label: 'Выполнен → одобрен (АГ)',    value: '53.8% (26 → 14)',   cls: 'ag' },
     ],
     fields: {
       duration: 'Кандидат может тянуть неделями (видно по % >100 в недельном отчёте)',
@@ -701,7 +699,7 @@ const STAGES = [
     pos: { x: 2880, y: -300 },
     stats: [
       { key: 'convOur', label: 'Собес → оффер отправлен (ВП)', value: '56.9% (72 → 41)', cls: 'our' },
-      { key: 'convAg', label: 'Собес → оффер отправлен (АГ)', value: '—', cls: 'ag' },
+      { key: 'convAg', label: 'Собес → оффер отправлен (АГ)', value: '22.2% (9 → 2)', cls: 'ag' },
     ],
     fields: {
       duration: 'Сколько проходит между собесом и отправкой оффера? (заполнить)',
