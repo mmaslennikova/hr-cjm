@@ -551,8 +551,9 @@ const STAGES = [
     id: '0a', title: 'Поиск (ВП)', tags: [{label:'Источник 1',cls:''}], cls: 'source',
     pos: { x: 0, y: -750 },
     stats: [
-      { key: 'volume', label: 'Объём (вход)', value: '733 откликов (с 22.12.2025)' },
-      { key: 'convEndToEnd', label: 'Сквозная (отклик → оффер)', value: '5.6% (41/733)', cls: 'our' },
+      { key: 'offers',     label: 'Офферы',          value: '41',                 cls: 'our' },
+      { key: 'convEndOur', label: 'Сквозная ВП',     value: '5.6% (41/733)',      cls: 'our' },
+      { key: 'convEndAg',  label: 'Сквозная АГ',     value: '0.8% (2/250)',       cls: 'ag'  },
     ],
     fields: {
       duration: '',
@@ -580,8 +581,9 @@ const STAGES = [
     id: '0b', title: 'Поиск (АГЕНТСТВО)', tags: [{label:'Источник 2',cls:''}], cls: 'source',
     pos: { x: 0, y: 250 },
     stats: [
-      { key: 'volume', label: 'Объём (вход)', value: '250 первых касаний (20-30 апр)' },
-      { key: 'convEndToEnd', label: 'Сквозная (касание → оффер)', value: '0.8% (2/250)', cls: 'ag' },
+      { key: 'offers',     label: 'Офферы',          value: '2',                  cls: 'ag'  },
+      { key: 'convEndOur', label: 'Сквозная ВП',     value: '5.6% (41/733)',      cls: 'our' },
+      { key: 'convEndAg',  label: 'Сквозная АГ',     value: '0.8% (2/250)',       cls: 'ag'  },
     ],
     fields: {
       duration: '',
