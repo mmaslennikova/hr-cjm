@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CJM воронки найма врачей</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --grid: #e8eaf0;
+    --card: #ffffff;
+    --border: #e3e6eb;
+    --text: #1a1d23;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-soft: #dbeafe;
+    --critical: #dc2626;
+    --critical-soft: #fee2e2;
+    --good: #059669;
+    --good-soft: #d1fae5;
+    --warn: #d97706;
+    --warn-soft: #fef3c7;
+    --our: #2563eb;
+    --ag: #7c3aed;
+    --placeholder: #9ca3af;
+    --hover: #f3f4f6;
+    --shadow: 0 2px 4px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-lg: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+    font-size: 13px;
+    overflow: hidden;
+  }
+
+  header.top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: saturate(180%) blur(8px);
+    -webkit-backdrop-filter: saturate(180%) blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  header.top h1 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .grow { flex: 1 1 auto; }
+  .save-status {
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 90px;
+    text-align: right;
+  }
+  .save-status.saving { color: var(--warn); }
+  .save-status.saved { color: var(--good); }
+  .controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  button {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text);
+    font-family: inherit;
+    line-height: 1;
+  }
+  button:hover { background: var(--hover); }
+  button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  button.primary:hover { background: #1d4ed8; }
+  button.danger { color: var(--critical); }
+  button.icon { padding: 6px 8px; }
+  .zoom-readout {
+    font-size: 11px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 36px;
+    text-align: center;
+  }
+
+  /* ---- Canvas ---- */
+  .viewport {
+    position: absolute;
+    top: 49px; left: 0; right: 0; bottom: 0;
+    overflow: hidden;
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(circle, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+    cursor: grab;
+  }
+  .viewport.panning { cursor: grabbing; }
+  .canvas {
+    position: absolute;
+    top: 0; left: 0;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+  .arrows {
+    position: absolute;
+    top: 0; left: 0;
+    pointer-events: none;
+    overflow: visible;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  /* ---- Goals card on canvas ---- */
+  .goals-card {
+    position: absolute;
+    width: 460px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: var(--shadow);
+  }
+  .goals-card h2 { margin: 0 0 6px 0; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .goals-card ol { margin: 4px 0; padding-left: 20px; }
+  .goals-card li { margin-bottom: 3px; font-size: 12px; }
+  .legend { display: flex; gap: 12px; font-size: 11px; color: var(--muted); flex-wrap: wrap; margin-top: 8px; }
+  .legend-item { display: inline-flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+  /* ---- Stage cards ---- */
+  article.stage {
+    position: absolute;
+    width: 460px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    cursor: default;
+  }
+  .goals-card { cursor: default; }
+  article.stage:hover { box-shadow: var(--shadow-lg); }
+  article.stage.critical { border-color: var(--critical); border-left: 4px solid var(--critical); }
+  article.stage.outcome-good { border-color: var(--good); border-top: 4px solid var(--good); }
+  article.stage.outcome-bad { border-color: var(--critical); border-top: 4px solid var(--critical); }
+  article.stage.source { border-top: 4px solid var(--accent); }
+
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    cursor: grab;
+    user-select: none;
+    background: linear-gradient(180deg, rgba(0,0,0,.015) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .stage-header.dragging { cursor: grabbing; }
+  .stage-header .drag-handle {
+    width: 14px; height: 14px;
+    background-image:
+      radial-gradient(circle, var(--muted) 1px, transparent 1px);
+    background-size: 4px 4px;
+    background-position: 0 0;
+    opacity: .35;
+    flex-shrink: 0;
+  }
+  .stage-id {
+    background: var(--text);
+    color: white;
+    border-radius: 5px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    min-width: 28px;
+    text-align: center;
+  }
+  article.stage.critical .stage-id { background: var(--critical); }
+  article.stage.outcome-good .stage-id { background: var(--good); }
+  article.stage.outcome-bad .stage-id { background: var(--critical); }
+  .stage-title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    flex: 1 1 auto;
+    line-height: 1.25;
+  }
+  .stage-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .stage-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .stage-tag.critical { background: var(--critical-soft); color: var(--critical); }
+  .stage-tag.warn { background: var(--warn-soft); color: var(--warn); }
+  .stage-tag.good { background: var(--good-soft); color: var(--good); }
+
+  .stage-body {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 6px;
+    background: var(--bg);
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+  .stat { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    font-weight: 600;
+  }
+  .stat-value {
+    font-size: 12px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    word-break: break-word;
+  }
+  .stat-value.our { color: var(--our); }
+  .stat-value.ag { color: var(--ag); }
+
+  .field-table {
+    display: grid;
+    grid-template-columns: 145px 1fr;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .field-table > div { padding: 6px 10px; border-bottom: 1px solid var(--border); }
+  .field-table > div:nth-last-child(-n+2) { border-bottom: none; }
+  .field-label {
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.35;
+  }
+  .field-value { font-size: 12px; line-height: 1.4; }
+  [contenteditable="true"]:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+    background: var(--accent-soft);
+    border-radius: 2px;
+  }
+  .field-value:hover { background: var(--hover); }
+  [contenteditable="true"]:empty::before {
+    content: attr(data-placeholder);
+    color: var(--placeholder);
+    font-style: italic;
+  }
+
+  .section-label {
+    padding: 3px 0;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin: 0 0 6px 0;
+  }
+  .section-block { display: flex; flex-direction: column; gap: 4px; }
+
+  /* Split field: НАШ / АГ side-by-side */
+  .field-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 0 !important;
+  }
+  .split-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 6px 10px;
+    border-right: 1px solid var(--border);
+  }
+  .split-cell:last-child { border-right: none; }
+  .split-cell-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: .05em;
+  }
+  .split-cell-our .split-cell-label { color: var(--our); }
+  .split-cell-ag .split-cell-label { color: var(--ag); }
+  .split-cell .field-value { font-size: 12px; padding: 0; }
+
+  /* Tag pills */
+  .tag-list, .link-list { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .link-list { flex-direction: column; align-items: stretch; }
+  .tag {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 11px;
+    padding: 2px 4px 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .tag-remove {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    padding: 0 4px;
+    font-size: 14px;
+    line-height: 1;
+    border-radius: 50%;
+    opacity: .55;
+  }
+  .tag-remove:hover { opacity: 1; background: rgba(0,0,0,.06); }
+  .tag-input, .link-input {
+    border: 1px dashed var(--border);
+    border-radius: 11px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-family: inherit;
+    background: transparent;
+    outline: none;
+    min-width: 90px;
+    flex-grow: 1;
+    color: var(--text);
+  }
+  .link-input { border-radius: 5px; min-width: 100%; }
+  .tag-input:focus, .link-input:focus {
+    border-style: solid;
+    border-color: var(--accent);
+    background: white;
+  }
+
+  /* Link items */
+  .link-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg);
+    border-radius: 5px;
+    padding: 4px 6px 4px 8px;
+    font-size: 11px;
+    min-width: 0;
+  }
+  .link-item a {
+    color: var(--accent);
+    text-decoration: none;
+    word-break: break-all;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .link-item a:hover { text-decoration: underline; }
+  .link-item .non-link {
+    color: var(--text);
+    flex: 1 1 auto;
+    word-break: break-word;
+    min-width: 0;
+  }
+
+  .hypotheses {
+    background: var(--warn-soft);
+    border: 1px solid #fde68a;
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .hypotheses h4 {
+    margin: 0 0 4px 0;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--warn);
+    font-weight: 700;
+  }
+  .hypotheses-list {
+    font-size: 12px;
+    white-space: pre-wrap;
+    min-height: 20px;
+    line-height: 1.4;
+  }
+  .hypotheses-list:focus {
+    outline: 2px solid var(--warn);
+    outline-offset: -1px;
+    background: white;
+    border-radius: 3px;
+  }
+
+  /* ---- Floating zoom controls ---- */
+  .zoom-toolbar {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 50;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    display: flex;
+    gap: 2px;
+    box-shadow: var(--shadow);
+  }
+  .zoom-toolbar button { border: none; }
+  .help-tip {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    z-index: 50;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: var(--shadow);
+    font-size: 11px;
+    color: var(--muted);
+    max-width: 320px;
+    line-height: 1.5;
+  }
+  kbd {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0 4px;
+    font-family: inherit;
+    font-size: 10px;
+    color: var(--text);
+  }
+
+  #importFile { display: none; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>CJM воронки найма врачей</h1>
+  <span class="grow"></span>
+  <span class="save-status saved" id="saveStatus">Загружено</span>
+  <div class="controls">
+    <button onclick="fitToContent()">Вписать всё</button>
+    <button onclick="resetPositions()">Сброс позиций</button>
+    <button onclick="exportJSON()">Экспорт</button>
+    <button onclick="document.getElementById('importFile').click()">Импорт</button>
+    <input type="file" id="importFile" accept="application/json" onchange="importJSON(event)">
+    <button class="danger" onclick="resetAll()">Сброс данных</button>
+  </div>
+</header>
+
+<div class="viewport" id="viewport">
+  <svg class="arrows" id="arrows" width="10000" height="3000"></svg>
+  <div class="canvas" id="canvas"></div>
+</div>
+
+<div class="zoom-toolbar">
+  <button class="icon" onclick="zoomBy(0.85)" title="Уменьшить">−</button>
+  <span class="zoom-readout" id="zoomReadout">100%</span>
+  <button class="icon" onclick="zoomBy(1.18)" title="Увеличить">+</button>
+  <button class="icon" onclick="resetView()" title="Сбросить вид">100%</button>
+</div>
+
+<div class="help-tip">
+  <kbd>пробел</kbd>+drag или drag по фону — двигать холст. <kbd>колесо</kbd> или <kbd>ctrl/⌘</kbd>+колесо — зум. Drag по шапке карточки — двигать карточку.
+</div>
+
+<script>
+const STORAGE_KEY = 'hr_cjm_v4';
+const VERSION = '4.0.0';
+
+const FIELD_DEFS = [
+  { key: 'duration',     label: 'Длительность (медиана)', type: 'split' },
+  { key: 'topReasons',   label: 'ТОП причин отвала',      type: 'tags' },
+  { key: 'passCriteria', label: 'Критерии «прошёл»' },
+  { key: 'decider',      label: 'Кто принимает решение' },
+  { key: 'artifact',     label: 'Артефакт на выходе' },
+  { key: 'owner',        label: 'Owner' },
+  { key: 'participants', label: 'Кто ещё участвует' },
+  { key: 'tracker',      label: 'Где трекается',          type: 'links' },
+];
+const DOCTOR_DEFS = [
+  { key: 'goals',    label: 'Цели врача' },
+  { key: 'pains',    label: 'Боли / страхи / риски' },
+  { key: 'emotions', label: 'Эмоции' },
+];
+const QC_DEFS = [
+  { key: 'qcCurrent', label: 'Как оцениваем годность' },
+  { key: 'qcMissing', label: 'Что не измеряем, но надо' },
+  { key: 'metricLink', label: 'Связь с целевой метрикой' },
+];
+
+const STAGES = [
+  {
+    id: '0a', title: 'Поиск (НАШ)', tags: [{label:'Источник',cls:''}], cls: 'source',
+    pos: { x: 0, y: -750 },
+    stats: [
+      { key: 'volume', label: 'Объём (вход)', value: '733 откликов (с 22.12.2025)' },
+      { key: 'convOur', label: 'Конверсия → след. (НАШ)', value: '46.4%', cls: 'our' },
+      { key: 'convAg', label: 'Конверсия → след. (АГ)', value: '—', cls: 'ag' },
+    ],
+    fields: {
+      duration: '',
+      topReasons: '',
+      passCriteria: 'Резюме соответствует базовым требованиям + ответы на 6 квалифицирующих вопросов в пороге',
+      decider: 'Внутренний рекрутер (не Дарья)',
+      artifact: 'Резюме в системе + ответы на квалифицирующие',
+      owner: 'Head of Radiology Ops',
+      participants: 'Внутренний рекрутер',
+      tracker: 'Google Sheets «Воронка найма врачей» (HH)',
+    },
+    doctor: {
+      goals: 'Найти подработку или основное место с гибким графиком (гипотеза)',
+      pains: 'Непонятная компания, неясные условия по оплате/нагрузке (гипотеза)',
+      emotions: 'Нейтрал → лёгкое любопытство (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Автоответ на 6 квалифицирующих вопросов',
+      qcMissing: 'Время от публикации до отклика; источник конкретно (hh / таргет РФ / КЗ / УЗ)',
+      metricLink: 'Срок вывода — если плохо квалифицируем, теряем время дальше',
+    },
+    hypotheses: '1. Разнести колонку «Откликов» на источники (hh / таргет РФ / КЗ / УЗ).\n2. Добавить «дату первого касания» в трекер.',
+  },
+  {
+    id: '0b', title: 'Поиск (АГЕНТСТВО)', tags: [{label:'Источник',cls:''}], cls: 'source',
+    pos: { x: 0, y: 250 },
+    stats: [
+      { key: 'volume', label: 'Объём (вход)', value: '250 первых касаний (20-30 апр)' },
+      { key: 'convOur', label: 'Конверсия → след. (НАШ)', value: '—', cls: 'our' },
+      { key: 'convAg', label: 'Конверсия → след. (АГ)', value: '25.6%', cls: 'ag' },
+    ],
+    fields: {
+      duration: '',
+      topReasons: '',
+      passCriteria: 'Резюме + 6 квалифицирующих (часть фильтра — на стороне агентства, часть — на нашей)',
+      decider: 'Агентство (первичный фильтр) → наш рекрутер (повторная проверка) — уточнить',
+      artifact: 'Резюме передано из агентства + ответы на квалифицирующие',
+      owner: 'Head of Radiology Ops',
+      participants: 'Менеджер агентства, наш рекрутер',
+      tracker: 'Агентский отчёт (Google Sheets)',
+    },
+    doctor: {
+      goals: 'Найти подработку или основное место (гипотеза)',
+      pains: 'Повторные звонки от разных источников; недоверие к посреднику (гипотеза)',
+      emotions: 'От тёплого до раздражения (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Те же 6 квалифицирующих + первичный фильтр агентства',
+      qcMissing: 'Конкретный канал агентства (hh / телеграм / старая база); качество по каналу',
+      metricLink: 'Стоимость кандидата (агентский бонус после 3 смен) — экономика воронки',
+    },
+    hypotheses: '1. Разнести 250 первых касаний на каналы — найти самый качественный.\n2. Договориться об одинаковой структуре отчёта; синхронизировать колонки.\n3. Понять, почему 0a даёт 46.4%, а 0b — 25.6%: агентство приводит хуже отфильтрованных или их фильтр строже?',
+  },
+  {
+    id: '1', title: 'Скрининг + валидация (6 квалифицирующих)',
+    pos: { x: 720, y: -300 },
+    stats: [
+      { key: 'convOur', label: 'Тест отправлен → выполнен (НАШ)', value: '55.9% (340 → 190)', cls: 'our' },
+      { key: 'convAg', label: 'Тест отправлен → выполнен (АГ)', value: '40.6% (64 → 26)', cls: 'ag' },
+    ],
+    fields: {
+      duration: '',
+      topReasons: 'Гипотезы: «передумал», «не успел», «нашёл другое место»',
+      passCriteria: 'Все 6 ответов в пороге. См. project_hr_filtering_criteria',
+      decider: 'Автоматически по правилам / рекрутер вручную — уточнить',
+      artifact: 'Заполненная анкета, прошедшая 6 проверок',
+      owner: 'Head of Radiology Ops',
+      participants: 'Рекрутер',
+      tracker: 'Google Sheets (колонка «Тест отправлен»)',
+    },
+    doctor: {
+      goals: 'Быстро понять, подходит ли вакансия (гипотеза)',
+      pains: 'Вопросы кажутся фильтрующими, не объясняют контекст (гипотеза)',
+      emotions: 'Нейтрал → раздражение (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Бинарно: прошёл все 6 / не прошёл',
+      qcMissing: 'Какой именно вопрос отсёк (топ-вопрос-резак); время на ответ',
+      metricLink: 'Качество кандидата на следующих этапах',
+    },
+    hypotheses: '1. Логировать, на каком из 6 вопросов отвалился кандидат.\n2. Добавить «исключения» (как для вопроса 1) к другим, если данные покажут чрезмерную жёсткость.\n3. Сравнить, как режет агентство vs мы — пороги могут отличаться.',
+  },
+  {
+    id: '2', title: 'Тестовое: выполнение → одобрение Дарьей',
+    pos: { x: 1440, y: -300 },
+    stats: [
+      { key: 'convOur', label: 'Тест выполнен → одобрен (НАШ)', value: '37.9% (190 → 72)', cls: 'our' },
+      { key: 'convAg', label: 'Тест выполнен → одобрен (АГ)', value: '53.8% (26 → 14)', cls: 'ag' },
+    ],
+    fields: {
+      duration: 'Кандидат может тянуть неделями (видно по % >100 в недельном отчёте)',
+      topReasons: 'Гипотезы: качество описания, формат, грубые ошибки в Fleischner',
+      passCriteria: 'Тестовое соответствует рубрике оценки (формализовать)',
+      decider: 'Дарья Кожихина',
+      artifact: 'Проверенное тестовое + решение «годен / не годен»',
+      owner: 'Head of Radiology Ops',
+      participants: 'Дарья + ассистент проверки (?)',
+      tracker: 'HH-таблица: «Собеседование» = «Одобрен Дарьей». Где сами тестовые — уточнить',
+    },
+    doctor: {
+      goals: 'Показать экспертизу, понять формат работы (гипотеза)',
+      pains: 'Долгое ожидание ответа после сдачи; непонятные критерии оценки (гипотеза)',
+      emotions: 'Вовлечение → тревога ожидания → разочарование при отказе (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Ручная проверка Дарьей',
+      qcMissing: 'Время от выполнения до решения; формализованная рубрика; топ-причины отказа',
+      metricLink: 'Качество врача в полях (плохой фильтр → увольнение в 30 исследований)',
+    },
+    hypotheses: '1. Переименовать в HH-таблице «Собеседование» → «Одобрен Дарьей».\n2. Добавить отдельную колонку «Собес проведён» в HH — увидеть нот-шоу.\n3. Сократить SLA проверки тестового.\n4. Дать рубрику оценки кандидату ДО теста — отсеется сам.\n5. Шаблон обратной связи «не годен».\n6. Понять, почему Дарья режет HH жёстче (37.9%), чем агентство (53.8%).',
+  },
+  {
+    id: '3', title: 'Интервью (1 круг, проведённый собес)',
+    pos: { x: 2160, y: -300 },
+    stats: [
+      { key: 'convOur', label: 'Одобрен → собес проведён (НАШ)', value: 'Не отслеживается', cls: 'our' },
+      { key: 'convAg', label: 'Одобрен → собес проведён (АГ)', value: '64.3% (14 → 9)', cls: 'ag' },
+    ],
+    fields: {
+      duration: '',
+      topReasons: 'Гипотезы: не пришёл, передумал, не договорились по графику/ставке',
+      passCriteria: 'Soft skills, согласие на условия, адекватная коммуникация (формализовать)',
+      decider: 'Дарья Кожихина',
+      artifact: 'Заметка по итогу собеса + решение «оффер / отказ»',
+      owner: 'Head of Radiology Ops',
+      participants: 'Дарья (ведущий), HR (логистика встречи)',
+      tracker: 'Уточнить — Notion / CRM / заметки',
+    },
+    doctor: {
+      goals: 'Понять команду, обсудить условия, ставку, график (гипотеза)',
+      pains: 'Разница ожиданий по ставке/графику; недоверие к удалённой работе (гипотеза)',
+      emotions: 'Ожидание → вовлечение / разочарование (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Субъективная оценка Дарьи',
+      qcMissing: 'Унифицированная рубрика оценки; причина «не пришёл» отдельно',
+      metricLink: '% принятия оффера (плохая синхронизация → отказ от оффера)',
+    },
+    hypotheses: '1. Чек-лист собеса с фиксацией ожиданий по ставке/графику.\n2. Прямо на собесе показать, как устроены платформы и первые недели.\n3. Записывать собесы (с согласия) — калибровка оценки.',
+  },
+  {
+    id: '4', title: 'Решение / выставление оффера',
+    pos: { x: 2880, y: -300 },
+    stats: [
+      { key: 'convOur', label: 'Собес → оффер отправлен (НАШ)', value: '56.9% (72 → 41)', cls: 'our' },
+      { key: 'convAg', label: 'Собес → оффер отправлен (АГ)', value: '—', cls: 'ag' },
+    ],
+    fields: {
+      duration: 'Сколько проходит между собесом и отправкой оффера? (заполнить)',
+      topReasons: '',
+      passCriteria: 'Положительная оценка после собеса',
+      decider: 'Дарья + руководитель (?)',
+      artifact: 'Оффер с условиями (ставка, график, нагрузка)',
+      owner: 'Head of Radiology Ops',
+      participants: 'HR (готовит оффер)',
+      tracker: 'Google Sheets (колонка «Оффер отправлен»)',
+    },
+    doctor: {
+      goals: 'Получить чёткие условия (гипотеза)',
+      pains: 'Долгое ожидание оффера; неясные пункты (гипотеза)',
+      emotions: 'Вовлечение → нетерпение (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Решение Дарьи',
+      qcMissing: 'Сколько занимает подготовка оффера; стандартная ли формулировка',
+      metricLink: 'Срок вывода (долгий оффер = врач уходит)',
+    },
+    hypotheses: '1. Шаблон оффера с минимальной кастомизацией.\n2. SLA «оффер за 1 рабочий день после положительного собеса».',
+  },
+  {
+    id: '5', title: 'Принятие оффера врачом', critical: true, tags: [{label:'Критичная точка',cls:'critical'}],
+    pos: { x: 3600, y: -300 },
+    stats: [
+      { key: 'convOur', label: 'Оффер отправлен → принят (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convAg', label: 'Оффер отправлен → принят (АГ)', value: '(нет данных)', cls: 'ag' },
+    ],
+    fields: {
+      duration: '',
+      topReasons: 'Гипотезы: ставка не устроила, нашли другое место, передумали',
+      passCriteria: 'Подписанный оффер / явное согласие',
+      decider: 'Врач',
+      artifact: 'Согласие на оффер (письмо / мессенджер)',
+      owner: 'Head of Radiology Ops',
+      participants: 'HR (контроль ответа)',
+      tracker: '(нет — ввести)',
+    },
+    doctor: {
+      goals: 'Финальная сверка условий с другими предложениями (гипотеза)',
+      pains: 'Давление по срокам; неясные подводные камни; страх ошибиться (гипотеза)',
+      emotions: 'Критичное принятие решения → тревога / облегчение (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Бинарно: принял / отказался',
+      qcMissing: 'Время на принятие; конкретные причины отказа в свободной форме',
+      metricLink: '⚠ Прямо целевая метрика #2 — % отказов от оффера',
+    },
+    hypotheses: '1. Звонок врачу через 24 часа после оффера, если нет ответа.\n2. Опрос «почему отказался» — обязательный, реальные причины.\n3. Дать врачу контакты другого работающего врача (peer-обоснование).\n4. Усилить «hold» агентского кандидата (агент должен мотивировать).',
+  },
+  {
+    id: '6', title: 'Оформление (документы, договор, доступы)',
+    pos: { x: 4320, y: -750 },
+    stats: [
+      { key: 'convOur', label: 'Принял → оформлен (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convAg', label: 'Принял → оформлен (АГ)', value: '(нет данных)', cls: 'ag' },
+    ],
+    fields: {
+      duration: '',
+      topReasons: 'Гипотезы: затянули документы; отказ из-за условий договора',
+      passCriteria: 'Договор подписан, доступы выданы',
+      decider: 'HR / юрист (формальная проверка)',
+      artifact: 'Подписанный договор + доступы (телерадиология, обучение)',
+      owner: 'Head of Radiology Ops',
+      participants: 'HR, юрист, IT (доступы)',
+      tracker: '(нет — ввести)',
+    },
+    doctor: {
+      goals: 'Быстро получить доступы и начать (гипотеза)',
+      pains: 'Бюрократия; ожидание подписей; страх «обмана» (гипотеза)',
+      emotions: 'Ожидание → раздражение если затянуто (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Бинарно: подписал / не подписал',
+      qcMissing: 'Время от принятия оффера до подписания; «застряло на чьей стороне»',
+      metricLink: 'Срок вывода — длинное оформление = врач остывает',
+    },
+    hypotheses: '1. Электронная подпись договора.\n2. Чек-лист «доступы готовы к моменту подписания».',
+  },
+  {
+    id: '7', title: 'Онбординг / обучение', critical: true, tags: [{label:'Критичная точка',cls:'critical'}],
+    pos: { x: 4320, y: 250 },
+    stats: [
+      { key: 'convOur', label: 'Оформлен → обучен (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convAg', label: 'Оформлен → обучен (АГ)', value: '(нет данных)', cls: 'ag' },
+    ],
+    fields: {
+      duration: '',
+      topReasons: 'Гипотезы: обучение слишком сложное / долгое / непонятное',
+      passCriteria: 'Прошёл обязательные модули (формализовать порог)',
+      decider: 'Платформа (авто) + куратор обучения',
+      artifact: 'Сертификат / отметка о завершении',
+      owner: 'Head of Radiology Ops',
+      participants: 'Куратор обучения, тренер',
+      tracker: 'Платформа обучения (training-platform)',
+    },
+    doctor: {
+      goals: 'Быстро понять, что делать; не утонуть (гипотеза)',
+      pains: 'Слишком много материалов; не видит связи с реальной работой (гипотеза)',
+      emotions: 'Вовлечение → утомление; разочарование если бюрократично (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Прохождение модулей (балл / зачёт)',
+      qcMissing: 'Время на каждый модуль; где врачи бросают',
+      metricLink: 'Срок вывода + качество в полях',
+    },
+    hypotheses: '1. Видеть в данных, на каком модуле бросают.\n2. Сократить онбординг до минимума.\n3. Связать обучение с песочницей (этап 8).',
+  },
+  {
+    id: '8', title: 'Тестовые описания (песочница)',
+    pos: { x: 5040, y: -300 },
+    stats: [
+      { key: 'volume', label: 'Ключевой артефакт', value: '5 тестовых исследований' },
+      { key: 'convOur', label: 'Обучение → песочница (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convAg', label: 'Обучение → песочница (АГ)', value: '(нет данных)', cls: 'ag' },
+    ],
+    fields: {
+      duration: '',
+      topReasons: '',
+      passCriteria: '5 тестовых выполнены и проверены валидаторами',
+      decider: 'Команда валидации',
+      artifact: '5 проверенных описаний на исторических данных',
+      owner: 'Head of Radiology Ops',
+      participants: 'Команда валидации',
+      tracker: 'Платформа телерадиологии',
+    },
+    doctor: {
+      goals: 'Прокачать инструмент, получить первую обратную связь (гипотеза)',
+      pains: 'Формат шаблонов отличается от привычного; долгая ОС (гипотеза)',
+      emotions: 'Тревога перед «реальной» работой (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Оценка валидаторов',
+      qcMissing: 'Время на каждое тестовое; рубрика расхождений с эталоном',
+      metricLink: 'Предиктор качества в полях',
+    },
+    hypotheses: '1. Прозрачная рубрика оценки песочницы.\n2. Если в песочнице слабые баллы → доп. обучение, а не сразу в смены.',
+  },
+  {
+    id: '9', title: 'Первые смены — Sandbox', critical: true, tags: [{label:'Критичная точка',cls:'critical'},{label:'Бонус агентству',cls:''}],
+    pos: { x: 5760, y: -300 },
+    stats: [
+      { key: 'volume', label: 'Ключевой артефакт', value: '3 смены закрыты → бонус агентству' },
+      { key: 'convOur', label: 'Песочница → 3 смены (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convAg', label: 'Песочница → 3 смены (АГ)', value: '(нет данных)', cls: 'ag' },
+    ],
+    fields: {
+      duration: '',
+      topReasons: 'Гипотезы: не вышел; не справился с темпом; не понравилось; технические проблемы',
+      passCriteria: '3 смены закрыты + качество описаний в норме',
+      decider: 'Команда валидации + Ops-менеджер',
+      artifact: '3 закрытые смены',
+      owner: 'Head of Radiology Ops',
+      participants: 'Валидаторы, Ops, куратор',
+      tracker: 'Платформа телерадиологии',
+    },
+    doctor: {
+      goals: 'Поработать в реальном потоке, понять темп (гипотеза)',
+      pains: 'Страх ошибиться; темп; ночные смены; технические проблемы (гипотеза)',
+      emotions: 'Сильная тревога → облегчение / разочарование (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Факт закрытия 3 смен + качество описаний',
+      qcMissing: 'Темп описаний; % несоответствия с валидацией; отказы выйти на смену',
+      metricLink: '⚠ Прямо целевая метрика #2 — % отказов на первых сменах',
+    },
+    hypotheses: '1. Бадди-система: опытный врач сопровождает новичка первые 3 смены.\n2. Чёткое ожидание по темпу (X описаний в час).\n3. Дебриф после каждой первой смены.\n4. Первая смена в «холодное» окно потока.',
+  },
+  {
+    id: '10', title: 'Адаптация — Sandbox → Supervised → Autonomous (цикл 30 исследований)', critical: true, tags: [{label:'Критичная точка',cls:'critical'},{label:'Цикл в 30 исследований',cls:''}],
+    pos: { x: 6480, y: -300 },
+    stats: [
+      { key: 'volume', label: 'Ключевой артефакт', value: '30 исследований по 10' },
+      { key: 'convOur', label: '3 смены → 30 (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convAg', label: '3 смены → 30 (АГ)', value: '(нет данных)', cls: 'ag' },
+    ],
+    fields: {
+      duration: '',
+      topReasons: '',
+      passCriteria: 'Положительная динамика во 2-й и 3-й десятке',
+      decider: 'Команда валидации',
+      artifact: '30 исследований с разбором по 10; решение о продолжении',
+      owner: 'Head of Radiology Ops',
+      participants: 'Валидаторы, куратор, Ops',
+      tracker: 'Платформа телерадиологии',
+    },
+    doctor: {
+      goals: 'Стабилизироваться, выйти на полную нагрузку (гипотеза)',
+      pains: 'Негативная ОС демотивирует; неясно «куда расту» (гипотеза)',
+      emotions: 'Вовлечение → разочарование если не получается (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Три цикла ОС (10/20/30)',
+      qcMissing: 'Количественный «трек улучшения»',
+      metricLink: '⚠ #3 отказы по инициативе врача; #4 удержание и качество',
+    },
+    hypotheses: '1. Стандартизированный шаблон ОС после каждой десятки.\n2. План «как растёт качество» с метриками.\n3. После 1-й десятки если очевидно «не вытянет» → доп. обучение, не молча 20 ещё.\n4. Параллельный self-assessment врача.',
+  },
+  {
+    id: '11a', title: 'Стабильная работа', cls: 'outcome-good',
+    pos: { x: 7200, y: -750 },
+    stats: [
+      { key: 'convOur', label: 'Цель — снизить отток (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convAg', label: 'Цель — снизить отток (АГ)', value: '(нет данных)', cls: 'ag' },
+    ],
+    fields: {
+      duration: 'Бесконечная — пока работает',
+      topReasons: 'Гипотезы причин ухода: ставка / нагрузка / выгорание / нашёл лучше',
+      passCriteria: 'Продолжающаяся положительная валидация',
+      decider: 'Команда валидации (мониторинг) + врач (для self-quit)',
+      artifact: 'Регулярные смены, стабильное качество',
+      owner: 'Head of Radiology Ops',
+      participants: 'Валидаторы, Ops, HR (1:1)',
+      tracker: 'Платформа телерадиологии + HR-система',
+    },
+    doctor: {
+      goals: 'Стабильный доход, рост, понятный график (гипотеза)',
+      pains: 'Выгорание, монотонность, «потолок», нагрузка (гипотеза)',
+      emotions: 'Стабильность → выгорание / отстранение (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Продолжающаяся валидация качества',
+      qcMissing: 'NPS работающего врача; нагрузка по часам; ранние сигналы ухода',
+      metricLink: '⚠ #4 — удержание и качество',
+    },
+    hypotheses: '1. Регулярные 1:1 (раз в месяц) — раннее обнаружение «уйду».\n2. Карьерный трек: senior-валидатор, тренер новичков.\n3. Систематический NPS работающих врачей.',
+  },
+  {
+    id: '11b', title: 'Увольнение после 30 исследований', cls: 'outcome-bad',
+    pos: { x: 7200, y: 250 },
+    stats: [
+      { key: 'convOur', label: 'Цель — минимизировать (НАШ)', value: '(нет данных)', cls: 'our' },
+      { key: 'convAg', label: 'Цель — минимизировать (АГ)', value: '(нет данных)', cls: 'ag' },
+    ],
+    fields: {
+      duration: 'Конечная точка — после 3-й десятки',
+      topReasons: '',
+      passCriteria: 'Нет роста качества во 2-й и 3-й десятке → расставание',
+      decider: 'Команда валидации',
+      artifact: 'Акт расставания + разобранные кейсы расхождений',
+      owner: 'Head of Radiology Ops',
+      participants: 'Валидаторы, HR',
+      tracker: 'Платформа телерадиологии + HR-система',
+    },
+    doctor: {
+      goals: '(закрытый этап для врача)',
+      pains: 'Разочарование; ощущение, что не справился (гипотеза)',
+      emotions: 'Разочарование, иногда — облегчение (гипотеза)',
+    },
+    qc: {
+      qcCurrent: 'Анализ ошибок врача после 30',
+      qcMissing: 'Систематика типов ошибок → обратная связь к этапу 1 (фильтр) и 7 (обучение)',
+      metricLink: 'Обратная связь в воронку — улучшать фильтр / обучение',
+    },
+    hypotheses: '1. Exit-интервью обязательно — реальные причины.\n2. Систематизировать типы ошибок → обновить программу обучения.\n3. Если паттерн ошибок повторяется → ужесточить фильтр на этапе 1 или 2.',
+  },
+];
+
+// Connections between stages
+const CONNECTIONS = [
+  ['0a', '1'], ['0b', '1'],
+  ['1', '2'], ['2', '3'], ['3', '4'], ['4', '5'],
+  // 6 and 7 run in parallel (split from 5, merge into 8)
+  ['5', '6'], ['5', '7'],
+  ['6', '8'], ['7', '8'],
+  ['8', '9'], ['9', '10'],
+  ['10', '11a'], ['10', '11b'],
+];
+
+// ---------- State ----------
+function loadStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { data: {}, positions: {}, view: null };
+    const p = JSON.parse(raw);
+    return { data: p.data || {}, positions: p.positions || {}, view: p.view || null, savedAt: p.savedAt };
+  } catch (e) { return { data: {}, positions: {}, view: null }; }
+}
+function saveStorage() {
+  const payload = {
+    version: VERSION,
+    savedAt: new Date().toISOString(),
+    data: state.data,
+    positions: state.positions,
+    view: { tx: view.tx, ty: view.ty, scale: view.scale },
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+}
+
+const loaded = loadStorage();
+const state = {
+  data: loaded.data,
+  positions: loaded.positions, // overrides default pos per stage id
+};
+const view = loaded.view || { tx: 60, ty: 60, scale: 0.7 };
+
+let saveTimer = null;
+function setStatus(t, c) {
+  const el = document.getElementById('saveStatus');
+  el.textContent = t;
+  el.className = 'save-status ' + (c||'');
+}
+function scheduleSave() {
+  setStatus('Сохраняем…', 'saving');
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    saveStorage();
+    setStatus('Сохранено', 'saved');
+  }, 350);
+}
+
+function getValue(stageId, group, key, fallback) {
+  const s = state.data[stageId] || {};
+  const g = s[group] || {};
+  return (g[key] !== undefined) ? g[key] : fallback;
+}
+function setValue(stageId, group, key, value) {
+  if (!state.data[stageId]) state.data[stageId] = {};
+  if (!state.data[stageId][group]) state.data[stageId][group] = {};
+  state.data[stageId][group][key] = value;
+  scheduleSave();
+}
+function getPos(stage) {
+  return state.positions[stage.id] || stage.pos;
+}
+function setPos(stageId, x, y) {
+  state.positions[stageId] = { x, y };
+  scheduleSave();
+}
+
+function escapeHTML(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ---------- Rendering ----------
+function renderEditable(stageId, group, key, defaultValue, placeholder, extraCls) {
+  const v = getValue(stageId, group, key, defaultValue);
+  const cls = ['field-value', extraCls||''].filter(Boolean).join(' ');
+  return `<div class="${cls}" contenteditable="true" data-stage="${stageId}" data-group="${group}" data-key="${key}" data-placeholder="${escapeHTML(placeholder||'(заполнить)')}">${escapeHTML(v)}</div>`;
+}
+function renderStats(stage) {
+  return stage.stats.map(s => {
+    const v = getValue(stage.id, 'stats', s.key, s.value);
+    const cls = ['stat-value', s.cls||''].filter(Boolean).join(' ');
+    return `<div class="stat">
+      <span class="stat-label">${escapeHTML(s.label)}</span>
+      <div class="${cls}" contenteditable="true" data-stage="${stage.id}" data-group="stats" data-key="${s.key}" data-placeholder="—">${escapeHTML(v)}</div>
+    </div>`;
+  }).join('');
+}
+function renderFieldTable(stage, defs, group, src) {
+  return defs.map(d => renderFieldRow(stage, d, group, src)).join('');
+}
+
+function renderFieldRow(stage, def, group, src) {
+  const labelHTML = `<div class="field-label">${escapeHTML(def.label)}</div>`;
+  if (def.type === 'split') {
+    const our = getValue(stage.id, group, def.key + 'Our', '');
+    const ag  = getValue(stage.id, group, def.key + 'Ag',  '');
+    return labelHTML + `<div class="field-split">
+      <div class="split-cell split-cell-our">
+        <span class="split-cell-label">Наш</span>
+        <div class="field-value" contenteditable="true" data-stage="${stage.id}" data-group="${group}" data-key="${def.key}Our" data-placeholder="—">${escapeHTML(our)}</div>
+      </div>
+      <div class="split-cell split-cell-ag">
+        <span class="split-cell-label">Агентство</span>
+        <div class="field-value" contenteditable="true" data-stage="${stage.id}" data-group="${group}" data-key="${def.key}Ag" data-placeholder="—">${escapeHTML(ag)}</div>
+      </div>
+    </div>`;
+  }
+  if (def.type === 'tags') {
+    return labelHTML + `<div>${renderTagList(stage.id, group, def.key, src)}</div>`;
+  }
+  if (def.type === 'links') {
+    return labelHTML + `<div>${renderLinkList(stage.id, group, def.key, src)}</div>`;
+  }
+  return labelHTML + renderEditable(stage.id, group, def.key, src[def.key]||'');
+}
+
+// ---- tags ----
+function getTagArray(stageId, group, key, src) {
+  const v = getValue(stageId, group, key, undefined);
+  if (Array.isArray(v)) return v;
+  // first-time: parse string default into tags
+  const fallback = (src && typeof src[key] === 'string') ? src[key] : (typeof v === 'string' ? v : '');
+  if (!fallback) return [];
+  return parseTagString(fallback);
+}
+function parseTagString(s) {
+  const t = String(s).replace(/^[Гг]ипотезы:\s*/, '').trim();
+  return t.split(/[,;]+/).map(x => x.replace(/[«»"']/g, '').trim()).filter(Boolean);
+}
+function renderTagList(stageId, group, key, src) {
+  const tags = getTagArray(stageId, group, key, src);
+  return `<div class="tag-list" data-tag-list="${stageId}|${group}|${key}">
+    ${tags.map((t, i) => `<span class="tag" data-tag-index="${i}">${escapeHTML(t)}<button class="tag-remove" type="button" aria-label="Удалить">×</button></span>`).join('')}
+    <input class="tag-input" type="text" placeholder="+ тег (Enter)" data-tag-add="${stageId}|${group}|${key}">
+  </div>`;
+}
+
+// ---- links ----
+function getLinkArray(stageId, group, key, src) {
+  const v = getValue(stageId, group, key, undefined);
+  if (Array.isArray(v)) return v;
+  const fallback = (src && typeof src[key] === 'string') ? src[key] : (typeof v === 'string' ? v : '');
+  if (!fallback || !fallback.trim()) return [];
+  return [fallback.trim()];
+}
+function isURL(s) {
+  return /^https?:\/\//i.test(String(s).trim());
+}
+function shortURL(u) {
+  let s = String(u).replace(/^https?:\/\//i, '').replace(/\/$/, '');
+  if (s.length > 60) s = s.slice(0, 57) + '…';
+  return s;
+}
+function renderLinkItem(value, idx) {
+  const inner = isURL(value)
+    ? `<a href="${escapeHTML(value)}" target="_blank" rel="noopener noreferrer">${escapeHTML(shortURL(value))}</a>`
+    : `<span class="non-link">${escapeHTML(value)}</span>`;
+  return `<div class="link-item" data-link-index="${idx}">${inner}<button class="tag-remove" type="button" aria-label="Удалить">×</button></div>`;
+}
+function renderLinkList(stageId, group, key, src) {
+  const items = getLinkArray(stageId, group, key, src);
+  return `<div class="link-list" data-link-list="${stageId}|${group}|${key}">
+    ${items.map((v, i) => renderLinkItem(v, i)).join('')}
+    <input class="link-input" type="text" placeholder="+ ссылка или текст (Enter)" data-link-add="${stageId}|${group}|${key}">
+  </div>`;
+}
+function renderHypotheses(stage) {
+  const v = getValue(stage.id, 'hypotheses', 'list', stage.hypotheses||'');
+  return `<div class="hypotheses-list" contenteditable="true" data-stage="${stage.id}" data-group="hypotheses" data-key="list" data-placeholder="Добавь гипотезы — каждую с новой строки">${escapeHTML(v)}</div>`;
+}
+function renderStage(stage) {
+  const tags = (stage.tags||[]).map(t => `<span class="stage-tag ${t.cls||''}">${escapeHTML(t.label)}</span>`).join('');
+  const cls = ['stage', stage.critical?'critical':'', stage.cls||''].filter(Boolean).join(' ');
+  const pos = getPos(stage);
+  return `
+    <article class="${cls}" id="stage-${stage.id}" style="left:${pos.x}px;top:${pos.y}px">
+      <header class="stage-header" data-drag="${stage.id}">
+        <span class="drag-handle"></span>
+        <span class="stage-id">${escapeHTML(stage.id)}</span>
+        <h2 class="stage-title">${escapeHTML(stage.title)}</h2>
+        <span class="stage-tags">${tags}</span>
+      </header>
+      <div class="stage-body">
+        <div class="stats-row">${renderStats(stage)}</div>
+        <div class="section-block">
+          <div class="section-label">Процесс и решение</div>
+          <div class="field-table">${renderFieldTable(stage, FIELD_DEFS, 'fields', stage.fields||{})}</div>
+        </div>
+        <div class="section-block">
+          <div class="section-label">Опыт врача (гипотезы)</div>
+          <div class="field-table">${renderFieldTable(stage, DOCTOR_DEFS, 'doctor', stage.doctor||{})}</div>
+        </div>
+        <div class="section-block">
+          <div class="section-label">Контроль качества и метрики</div>
+          <div class="field-table">${renderFieldTable(stage, QC_DEFS, 'qc', stage.qc||{})}</div>
+        </div>
+        <div class="hypotheses">
+          <h4>Гипотезы улучшений</h4>
+          ${renderHypotheses(stage)}
+        </div>
+      </div>
+    </article>`;
+}
+
+const canvas = document.getElementById('canvas');
+const arrowsSVG = document.getElementById('arrows');
+
+function renderGoals() {
+  const html = `
+    <div class="goals-card" style="left:0;top:-1100px;width:840px">
+      <h2>CJM воронки найма врачей · Цели</h2>
+      <ol>
+        <li>Снизить срок вывода врача в рабочие смены.</li>
+        <li>Снизить % отказов: на оффере, на первых сменах, после первых смен (по инициативе врача).</li>
+        <li>Улучшить качество работы и удержание (после 30 исследований).</li>
+        <li>Прописать принципы контроля врача на каждом этапе.</li>
+      </ol>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--our)"></span>Наш поток (HH)</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--ag)"></span>Агентство</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--critical)"></span>Критичная точка</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--good)"></span>Целевой исход</span>
+      </div>
+    </div>`;
+  return html;
+}
+
+function renderAll() {
+  canvas.innerHTML = renderGoals() + STAGES.map(renderStage).join('');
+  attachEditHandlers();
+  attachCardDragHandlers();
+  drawArrows();
+  applyView();
+}
+
+let _delegationSetup = false;
+function setupDelegation() {
+  if (_delegationSetup) return;
+  _delegationSetup = true;
+
+  // prevent canvas pan when interacting with inputs / tag pills / links
+  canvas.addEventListener('mousedown', e => {
+    if (e.target.matches('input.tag-input, input.link-input, .tag-remove, .link-item a')) {
+      e.stopPropagation();
+    }
+  });
+
+  canvas.addEventListener('click', e => {
+    if (e.target.matches('.tag-list .tag-remove')) {
+      e.preventDefault(); e.stopPropagation();
+      handleTagRemove(e.target);
+    } else if (e.target.matches('.link-list .tag-remove')) {
+      e.preventDefault(); e.stopPropagation();
+      handleLinkRemove(e.target);
+    }
+  });
+
+  canvas.addEventListener('keydown', e => {
+    if (e.target.matches('input[data-tag-add]')) handleTagKeydown(e);
+    else if (e.target.matches('input[data-link-add]')) handleLinkKeydown(e);
+  });
+}
+
+function handleTagKeydown(e) {
+  const input = e.target;
+  const [stageId, group, key] = input.dataset.tagAdd.split('|');
+  const stage = STAGES.find(s => s.id === stageId);
+  const src = stage ? stage[group] : {};
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const v = input.value.trim();
+    if (!v) return;
+    const arr = getTagArray(stageId, group, key, src);
+    arr.push(v);
+    setValue(stageId, group, key, arr);
+    refreshTagList(stageId, group, key, src, true);
+  } else if (e.key === 'Backspace' && input.value === '') {
+    const arr = getTagArray(stageId, group, key, src);
+    if (!arr.length) return;
+    arr.pop();
+    setValue(stageId, group, key, arr);
+    refreshTagList(stageId, group, key, src, true);
+  }
+}
+function handleTagRemove(btn) {
+  const tag = btn.parentElement;
+  const list = tag.closest('.tag-list');
+  const [stageId, group, key] = list.dataset.tagList.split('|');
+  const idx = parseInt(tag.dataset.tagIndex, 10);
+  const stage = STAGES.find(s => s.id === stageId);
+  const src = stage ? stage[group] : {};
+  const arr = getTagArray(stageId, group, key, src);
+  arr.splice(idx, 1);
+  setValue(stageId, group, key, arr);
+  refreshTagList(stageId, group, key, src, false);
+}
+function refreshTagList(stageId, group, key, src, focus) {
+  const list = canvas.querySelector(`[data-tag-list="${stageId}|${group}|${key}"]`);
+  if (!list) return;
+  list.outerHTML = renderTagList(stageId, group, key, src);
+  if (focus) {
+    const inp = canvas.querySelector(`[data-tag-add="${stageId}|${group}|${key}"]`);
+    if (inp) inp.focus();
+  }
+  requestAnimationFrame(drawArrows);
+}
+
+function handleLinkKeydown(e) {
+  const input = e.target;
+  const [stageId, group, key] = input.dataset.linkAdd.split('|');
+  const stage = STAGES.find(s => s.id === stageId);
+  const src = stage ? stage[group] : {};
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const v = input.value.trim();
+    if (!v) return;
+    const arr = getLinkArray(stageId, group, key, src);
+    arr.push(v);
+    setValue(stageId, group, key, arr);
+    refreshLinkList(stageId, group, key, src, true);
+  }
+}
+function handleLinkRemove(btn) {
+  const item = btn.parentElement;
+  const list = item.closest('.link-list');
+  const [stageId, group, key] = list.dataset.linkList.split('|');
+  const idx = parseInt(item.dataset.linkIndex, 10);
+  const stage = STAGES.find(s => s.id === stageId);
+  const src = stage ? stage[group] : {};
+  const arr = getLinkArray(stageId, group, key, src);
+  arr.splice(idx, 1);
+  setValue(stageId, group, key, arr);
+  refreshLinkList(stageId, group, key, src, false);
+}
+function refreshLinkList(stageId, group, key, src, focus) {
+  const list = canvas.querySelector(`[data-link-list="${stageId}|${group}|${key}"]`);
+  if (!list) return;
+  list.outerHTML = renderLinkList(stageId, group, key, src);
+  if (focus) {
+    const inp = canvas.querySelector(`[data-link-add="${stageId}|${group}|${key}"]`);
+    if (inp) inp.focus();
+  }
+  requestAnimationFrame(drawArrows);
+}
+
+function attachEditHandlers() {
+  canvas.querySelectorAll('[contenteditable="true"]').forEach(el => {
+    el.addEventListener('input', () => {
+      setValue(el.dataset.stage, el.dataset.group, el.dataset.key, el.innerText);
+    });
+    el.addEventListener('paste', e => {
+      e.preventDefault();
+      const text = (e.clipboardData||window.clipboardData).getData('text');
+      document.execCommand('insertText', false, text);
+    });
+    // prevent canvas pan when interacting with text
+    el.addEventListener('mousedown', e => e.stopPropagation());
+  });
+  canvas.querySelectorAll('details > summary').forEach(s => {
+    s.addEventListener('mousedown', e => e.stopPropagation());
+    s.addEventListener('click', () => requestAnimationFrame(drawArrows));
+  });
+}
+
+// ---------- Card drag ----------
+function attachCardDragHandlers() {
+  canvas.querySelectorAll('[data-drag]').forEach(header => {
+    header.addEventListener('mousedown', e => {
+      if (e.target.matches('[contenteditable="true"]')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const id = header.dataset.drag;
+      const card = document.getElementById('stage-' + id);
+      const startX = e.clientX, startY = e.clientY;
+      const initLeft = parseFloat(card.style.left) || 0;
+      const initTop = parseFloat(card.style.top) || 0;
+      header.classList.add('dragging');
+      function move(ev) {
+        const dx = (ev.clientX - startX) / view.scale;
+        const dy = (ev.clientY - startY) / view.scale;
+        card.style.left = (initLeft + dx) + 'px';
+        card.style.top = (initTop + dy) + 'px';
+        drawArrows();
+      }
+      function up(ev) {
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+        header.classList.remove('dragging');
+        const finalLeft = parseFloat(card.style.left) || 0;
+        const finalTop = parseFloat(card.style.top) || 0;
+        setPos(id, finalLeft, finalTop);
+        drawArrows();
+      }
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    });
+  });
+}
+
+// ---------- Arrows ----------
+function drawArrows() {
+  const ns = 'http://www.w3.org/2000/svg';
+  arrowsSVG.innerHTML = '';
+  // marker for arrowhead
+  const defs = document.createElementNS(ns, 'defs');
+  defs.innerHTML = `
+    <marker id="arrow-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+    </marker>`;
+  arrowsSVG.appendChild(defs);
+
+  CONNECTIONS.forEach(([fromId, toId]) => {
+    const a = document.getElementById('stage-' + fromId);
+    const b = document.getElementById('stage-' + toId);
+    if (!a || !b) return;
+    const aLeft = parseFloat(a.style.left) || 0;
+    const aTop = parseFloat(a.style.top) || 0;
+    const bLeft = parseFloat(b.style.left) || 0;
+    const bTop = parseFloat(b.style.top) || 0;
+    const aW = a.offsetWidth, aH = a.offsetHeight;
+    const bH = b.offsetHeight;
+
+    // horizontal flow: right edge of source → left edge of target
+    const x1 = aLeft + aW;
+    const y1 = aTop + aH/2;
+    const x2 = bLeft;
+    const y2 = bTop + bH/2;
+
+    const dx = x2 - x1;
+    const c1x = x1 + Math.max(60, dx * 0.5);
+    const c2x = x2 - Math.max(60, dx * 0.5);
+
+    const path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', `M ${x1} ${y1} C ${c1x} ${y1}, ${c2x} ${y2}, ${x2 - 10} ${y2}`);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', '#94a3b8');
+    path.setAttribute('stroke-width', '2.2');
+    path.setAttribute('marker-end', 'url(#arrow-head)');
+    arrowsSVG.appendChild(path);
+  });
+}
+
+// ---------- Pan / Zoom ----------
+const viewport = document.getElementById('viewport');
+function applyView() {
+  canvas.style.transform = `translate(${view.tx}px, ${view.ty}px) scale(${view.scale})`;
+  arrowsSVG.style.transform = `translate(${view.tx}px, ${view.ty}px) scale(${view.scale})`;
+  document.getElementById('zoomReadout').textContent = Math.round(view.scale * 100) + '%';
+  scheduleSave();
+}
+
+let panActive = false, panStart = null;
+let spaceDown = false;
+viewport.addEventListener('mousedown', e => {
+  if (e.target.closest('article.stage') || e.target.closest('.goals-card')) {
+    if (!spaceDown) return;
+  }
+  panActive = true;
+  panStart = { x: e.clientX, y: e.clientY, tx: view.tx, ty: view.ty };
+  viewport.classList.add('panning');
+  e.preventDefault();
+});
+window.addEventListener('mousemove', e => {
+  if (!panActive) return;
+  view.tx = panStart.tx + (e.clientX - panStart.x);
+  view.ty = panStart.ty + (e.clientY - panStart.y);
+  applyView();
+});
+window.addEventListener('mouseup', () => {
+  panActive = false;
+  viewport.classList.remove('panning');
+});
+
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space' && !e.target.matches('[contenteditable="true"], input, textarea')) {
+    spaceDown = true;
+    viewport.style.cursor = 'grab';
+    e.preventDefault();
+  }
+});
+window.addEventListener('keyup', e => {
+  if (e.code === 'Space') {
+    spaceDown = false;
+    viewport.style.cursor = '';
+  }
+});
+
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = viewport.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const delta = -e.deltaY;
+  const factor = Math.exp(delta * 0.0015);
+  zoomAt(mx, my, factor);
+}, { passive: false });
+
+function zoomAt(mx, my, factor) {
+  const newScale = Math.max(0.2, Math.min(3, view.scale * factor));
+  const k = newScale / view.scale;
+  view.tx = mx - (mx - view.tx) * k;
+  view.ty = my - (my - view.ty) * k;
+  view.scale = newScale;
+  applyView();
+}
+function zoomBy(f) {
+  const r = viewport.getBoundingClientRect();
+  zoomAt(r.width/2, r.height/2, f);
+}
+function resetView() {
+  view.tx = 60; view.ty = 60; view.scale = 0.7;
+  applyView();
+}
+function fitToContent() {
+  const cards = canvas.querySelectorAll('article.stage, .goals-card');
+  if (!cards.length) return;
+  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  cards.forEach(c => {
+    const x = parseFloat(c.style.left)||0, y = parseFloat(c.style.top)||0;
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x + c.offsetWidth);
+    maxY = Math.max(maxY, y + c.offsetHeight);
+  });
+  const r = viewport.getBoundingClientRect();
+  const pad = 60;
+  const w = maxX - minX + pad*2;
+  const h = maxY - minY + pad*2;
+  const scale = Math.min(r.width / w, r.height / h, 1);
+  view.scale = scale;
+  view.tx = -minX*scale + pad*scale;
+  view.ty = -minY*scale + pad*scale;
+  applyView();
+}
+
+// ---------- Export / Import / Reset ----------
+function exportJSON() {
+  const payload = {
+    version: VERSION,
+    exportedAt: new Date().toISOString(),
+    data: state.data,
+    positions: state.positions,
+    view: { tx: view.tx, ty: view.ty, scale: view.scale },
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cjm_hr_${new Date().toISOString().slice(0,19).replace(/[T:]/g,'-')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importJSON(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const p = JSON.parse(e.target.result);
+      if (!p.data) throw new Error('No "data" field');
+      if (!confirm('Импортировать из файла? Текущие изменения будут перезаписаны.')) return;
+      state.data = p.data;
+      state.positions = p.positions || {};
+      if (p.view) Object.assign(view, p.view);
+      saveStorage();
+      renderAll();
+      setStatus('Импортировано', 'saved');
+    } catch (err) { alert('Ошибка импорта: ' + err.message); }
+  };
+  r.readAsText(file);
+  ev.target.value = '';
+}
+function resetPositions() {
+  if (!confirm('Сбросить позиции карточек к исходным?')) return;
+  state.positions = {};
+  saveStorage();
+  renderAll();
+}
+function resetAll() {
+  if (!confirm('Сбросить всё (контент + позиции)? Это нельзя отменить.')) return;
+  state.data = {};
+  state.positions = {};
+  localStorage.removeItem(STORAGE_KEY);
+  resetView();
+  renderAll();
+  setStatus('Сброшено', 'saved');
+}
+
+// ---------- Init ----------
+setupDelegation();
+renderAll();
+window.addEventListener('resize', () => {});
+setTimeout(() => {
+  drawArrows();
+  if (!loaded.view) fitToContent();
+}, 60);
+if (loaded.savedAt) {
+  setStatus('Загружено', 'saved');
+}
+window.exportJSON = exportJSON;
+window.importJSON = importJSON;
+window.resetPositions = resetPositions;
+window.resetAll = resetAll;
+window.fitToContent = fitToContent;
+window.resetView = resetView;
+window.zoomBy = zoomBy;
+</script>
+
+</body>
+</html>
