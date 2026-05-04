@@ -548,11 +548,11 @@ const QC_DEFS = [
 
 const STAGES = [
   {
-    id: '0a', title: 'Поиск (Внутренний поиск)', tags: [{label:'Источник',cls:''}], cls: 'source',
+    id: '0a', title: 'Поиск (ВП)', tags: [{label:'Источник',cls:''}], cls: 'source',
     pos: { x: 0, y: -750 },
     stats: [
       { key: 'volume', label: 'Объём (вход)', value: '733 откликов (с 22.12.2025)' },
-      { key: 'convOur', label: 'Конверсия → след. (Внутренний поиск)', value: '46.4%', cls: 'our' },
+      { key: 'convOur', label: 'Конверсия → след. (ВП)', value: '46.4%', cls: 'our' },
       { key: 'convAg', label: 'Конверсия → след. (АГ)', value: '—', cls: 'ag' },
     ],
     fields: {
@@ -582,7 +582,7 @@ const STAGES = [
     pos: { x: 0, y: 250 },
     stats: [
       { key: 'volume', label: 'Объём (вход)', value: '250 первых касаний (20-30 апр)' },
-      { key: 'convOur', label: 'Конверсия → след. (Внутренний поиск)', value: '—', cls: 'our' },
+      { key: 'convOur', label: 'Конверсия → след. (ВП)', value: '—', cls: 'our' },
       { key: 'convAg', label: 'Конверсия → след. (АГ)', value: '25.6%', cls: 'ag' },
     ],
     fields: {
@@ -611,7 +611,7 @@ const STAGES = [
     id: '1', title: 'Скрининг + валидация (6 квалифицирующих)',
     pos: { x: 720, y: -300 },
     stats: [
-      { key: 'convOur', label: 'Тест отправлен → выполнен (Внутренний поиск)', value: '55.9% (340 → 190)', cls: 'our' },
+      { key: 'convOur', label: 'Тест отправлен → выполнен (ВП)', value: '55.9% (340 → 190)', cls: 'our' },
       { key: 'convAg', label: 'Тест отправлен → выполнен (АГ)', value: '40.6% (64 → 26)', cls: 'ag' },
     ],
     fields: {
@@ -640,7 +640,7 @@ const STAGES = [
     id: '2', title: 'Тестовое: выполнение → одобрение Дарьей',
     pos: { x: 1440, y: -300 },
     stats: [
-      { key: 'convOur', label: 'Тест выполнен → одобрен (Внутренний поиск)', value: '37.9% (190 → 72)', cls: 'our' },
+      { key: 'convOur', label: 'Тест выполнен → одобрен (ВП)', value: '37.9% (190 → 72)', cls: 'our' },
       { key: 'convAg', label: 'Тест выполнен → одобрен (АГ)', value: '53.8% (26 → 14)', cls: 'ag' },
     ],
     fields: {
@@ -669,7 +669,7 @@ const STAGES = [
     id: '3', title: 'Интервью (1 круг, проведённый собес)',
     pos: { x: 2160, y: -300 },
     stats: [
-      { key: 'convOur', label: 'Одобрен → собес проведён (Внутренний поиск)', value: 'Не отслеживается', cls: 'our' },
+      { key: 'convOur', label: 'Одобрен → собес проведён (ВП)', value: 'Не отслеживается', cls: 'our' },
       { key: 'convAg', label: 'Одобрен → собес проведён (АГ)', value: '64.3% (14 → 9)', cls: 'ag' },
     ],
     fields: {
@@ -698,7 +698,7 @@ const STAGES = [
     id: '4', title: 'Решение / выставление оффера',
     pos: { x: 2880, y: -300 },
     stats: [
-      { key: 'convOur', label: 'Собес → оффер отправлен (Внутренний поиск)', value: '56.9% (72 → 41)', cls: 'our' },
+      { key: 'convOur', label: 'Собес → оффер отправлен (ВП)', value: '56.9% (72 → 41)', cls: 'our' },
       { key: 'convAg', label: 'Собес → оффер отправлен (АГ)', value: '—', cls: 'ag' },
     ],
     fields: {
@@ -727,7 +727,7 @@ const STAGES = [
     id: '5', title: 'Принятие оффера врачом', critical: true, tags: [{label:'Критичная точка',cls:'critical'}],
     pos: { x: 3600, y: -300 },
     stats: [
-      { key: 'convOur', label: 'Оффер отправлен → принят (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Оффер отправлен → принят (ВП)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Оффер отправлен → принят (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -756,7 +756,7 @@ const STAGES = [
     id: '6', title: 'Оформление (документы, договор, доступы)',
     pos: { x: 4320, y: -750 },
     stats: [
-      { key: 'convOur', label: 'Принял → оформлен (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Принял → оформлен (ВП)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Принял → оформлен (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -785,7 +785,7 @@ const STAGES = [
     id: '7', title: 'Онбординг / обучение', critical: true, tags: [{label:'Критичная точка',cls:'critical'}],
     pos: { x: 4320, y: 250 },
     stats: [
-      { key: 'convOur', label: 'Оформлен → обучен (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Оформлен → обучен (ВП)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Оформлен → обучен (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -815,7 +815,7 @@ const STAGES = [
     pos: { x: 5040, y: -300 },
     stats: [
       { key: 'volume', label: 'Ключевой артефакт', value: '5 тестовых исследований' },
-      { key: 'convOur', label: 'Обучение → песочница (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Обучение → песочница (ВП)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Обучение → песочница (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -845,7 +845,7 @@ const STAGES = [
     pos: { x: 5760, y: -300 },
     stats: [
       { key: 'volume', label: 'Ключевой артефакт', value: '3 смены закрыты → бонус агентству' },
-      { key: 'convOur', label: 'Песочница → 3 смены (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Песочница → 3 смены (ВП)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Песочница → 3 смены (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -875,7 +875,7 @@ const STAGES = [
     pos: { x: 6480, y: -300 },
     stats: [
       { key: 'volume', label: 'Ключевой артефакт', value: '30 исследований по 10' },
-      { key: 'convOur', label: '3 смены → 30 (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: '3 смены → 30 (ВП)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: '3 смены → 30 (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -904,7 +904,7 @@ const STAGES = [
     id: '11a', title: 'Стабильная работа', cls: 'outcome-good',
     pos: { x: 7200, y: -750 },
     stats: [
-      { key: 'convOur', label: 'Цель — снизить отток (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Цель — снизить отток (ВП)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Цель — снизить отток (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -933,7 +933,7 @@ const STAGES = [
     id: '11b', title: 'Увольнение после 30 исследований', cls: 'outcome-bad',
     pos: { x: 7200, y: 250 },
     stats: [
-      { key: 'convOur', label: 'Цель — минимизировать (Внутренний поиск)', value: '(нет данных)', cls: 'our' },
+      { key: 'convOur', label: 'Цель — минимизировать (ВП)', value: '(нет данных)', cls: 'our' },
       { key: 'convAg', label: 'Цель — минимизировать (АГ)', value: '(нет данных)', cls: 'ag' },
     ],
     fields: {
@@ -1066,7 +1066,7 @@ function renderFieldRow(stage, def, group, src) {
     const ag  = getValue(stage.id, group, def.key + 'Ag',  '');
     return labelHTML + `<div class="field-split">
       <div class="split-cell split-cell-our">
-        <span class="split-cell-label">Внутренний поиск</span>
+        <span class="split-cell-label">ВП</span>
         <div class="field-value" contenteditable="true" data-stage="${stage.id}" data-group="${group}" data-key="${def.key}Our" data-placeholder="—">${escapeHTML(our)}</div>
       </div>
       <div class="split-cell split-cell-ag">
