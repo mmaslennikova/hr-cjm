@@ -462,31 +462,6 @@
     box-shadow: var(--shadow);
   }
   .zoom-toolbar button { border: none; }
-  .help-tip {
-    position: fixed;
-    bottom: 16px;
-    left: 16px;
-    z-index: 50;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    box-shadow: var(--shadow);
-    font-size: 11px;
-    color: var(--muted);
-    max-width: 320px;
-    line-height: 1.5;
-  }
-  kbd {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 0 4px;
-    font-family: inherit;
-    font-size: 10px;
-    color: var(--text);
-  }
-
   #importFile { display: none; }
 </style>
 </head>
@@ -516,10 +491,6 @@
   <span class="zoom-readout" id="zoomReadout">100%</span>
   <button class="icon" onclick="zoomBy(1.18)" title="Увеличить">+</button>
   <button class="icon" onclick="resetView()" title="Сбросить вид">100%</button>
-</div>
-
-<div class="help-tip">
-  <kbd>пробел</kbd>+drag или drag по фону — двигать холст. <kbd>колесо</kbd> или <kbd>ctrl/⌘</kbd>+колесо — зум. Drag по шапке карточки — двигать карточку.
 </div>
 
 <script>
@@ -1592,10 +1563,60 @@ viewport.addEventListener('wheel', e => {
   const rect = viewport.getBoundingClientRect();
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
-  const delta = -e.deltaY;
-  const factor = Math.exp(delta * 0.0015);
+  // Normalize deltaY for Firefox (deltaMode=1 → lines) and page-mode (=2)
+  const dyPx = e.deltaMode === 1 ? e.deltaY * 32 :
+               e.deltaMode === 2 ? e.deltaY * window.innerHeight :
+               e.deltaY;
+  // Pinch-zoom on Mac trackpad sets ctrlKey=true and sends very small dy → bump sensitivity
+  const k = (e.ctrlKey && Math.abs(dyPx) < 50) ? 0.012 : 0.0015;
+  const factor = Math.exp(-dyPx * k);
   zoomAt(mx, my, factor);
 }, { passive: false });
+
+// ---- Touch (pinch-to-zoom + one-finger pan) for tablets/phones ----
+let touchState = null;
+viewport.addEventListener('touchstart', e => {
+  if (e.target.closest('input, textarea, [contenteditable="true"], .tag-remove, button, a')) return;
+  if (e.touches.length === 1) {
+    if (e.target.closest('article.stage, .goals-card')) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    touchState = { mode: 'pan', sx: t.clientX, sy: t.clientY, tx: view.tx, ty: view.ty };
+  } else if (e.touches.length === 2) {
+    e.preventDefault();
+    const [t1, t2] = [e.touches[0], e.touches[1]];
+    const d = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+    const cx = (t1.clientX + t2.clientX) / 2;
+    const cy = (t1.clientY + t2.clientY) / 2;
+    touchState = { mode: 'pinch', d, cx, cy, scale: view.scale, tx: view.tx, ty: view.ty };
+  }
+}, { passive: false });
+viewport.addEventListener('touchmove', e => {
+  if (!touchState) return;
+  if (touchState.mode === 'pan' && e.touches.length === 1) {
+    e.preventDefault();
+    const t = e.touches[0];
+    view.tx = touchState.tx + (t.clientX - touchState.sx);
+    view.ty = touchState.ty + (t.clientY - touchState.sy);
+    applyView();
+  } else if (touchState.mode === 'pinch' && e.touches.length === 2) {
+    e.preventDefault();
+    const [t1, t2] = [e.touches[0], e.touches[1]];
+    const d = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+    const factor = d / touchState.d;
+    const newScale = Math.max(0.2, Math.min(3, touchState.scale * factor));
+    const ratio = newScale / touchState.scale;
+    const rect = viewport.getBoundingClientRect();
+    const mx = touchState.cx - rect.left;
+    const my = touchState.cy - rect.top;
+    view.tx = mx - (mx - touchState.tx) * ratio;
+    view.ty = my - (my - touchState.ty) * ratio;
+    view.scale = newScale;
+    applyView();
+  }
+}, { passive: false });
+viewport.addEventListener('touchend', () => { touchState = null; });
+viewport.addEventListener('touchcancel', () => { touchState = null; });
 
 function zoomAt(mx, my, factor) {
   const newScale = Math.max(0.2, Math.min(3, view.scale * factor));
